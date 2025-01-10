@@ -1,0 +1,44 @@
+name: Integration Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Python environment
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.12'
+
+      # Step 3: Install pipenv for dependency management
+      - name: Install pipenv
+        run: pip install pipenv
+
+      # Step 4: Install dependencies from src/api-service
+      - name: Install dependencies
+        working-directory: src/api-service
+        run: pipenv install --dev
+
+      # Step 5: Verify pytest installation
+      - name: Verify pytest installation
+        working-directory: src/api-service
+        run: pipenv run pytest --version
+
+      # Step 6: Run integration tests
+      - name: Run Integration Tests
+        working-directory: src/api-service
+        run: |
+          pipenv run pytest ../../tests/test_integration.py

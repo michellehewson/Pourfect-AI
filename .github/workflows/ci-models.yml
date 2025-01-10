@@ -1,0 +1,94 @@
+name: CI models
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/models/**"
+      - "tests/test_models*"
+      - ".github/workflows/ci-models.yml"
+  pull_request:
+    branches:
+      - main 
+    paths:
+      - "src/models/**"
+      - "tests/test_models*"
+      - ".github/workflows/ci-models.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Python environment (Python 3.12)
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.12'
+
+      # Step 3: Set PYTHONPATH to include the src directory for module imports
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=$PYTHONPATH:$(pwd)/src" >> $GITHUB_ENV  
+
+      # Step 4: Install Docker (with clean setup)
+      - name: Install Docker
+        run: |
+          # Remove any existing containerd installation
+          sudo apt-get remove -y containerd || true
+          
+          # Set up Docker's official repository
+          sudo apt-get update
+          sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+          sudo apt-get update
+          
+          # Install Docker CE
+          sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+
+      # Step 5: Install pipenv for managing Python dependencies
+      - name: Install pipenv
+        run: pip install pipenv
+
+      # Step 6: Install dependencies from Pipfile (including dev dependencies like pytest)
+      - name: Install dependencies
+        working-directory: src/models  # Specify directory containing Pipfile
+        run: pipenv install --dev
+      
+      # Step 7: Lint all Python files with flake8
+      - name: Run flake8 linting
+        working-directory: src/models
+        run: pipenv run flake8 .
+
+      # Step 8: Build and Run Docker Container
+      - name: Build Docker Image
+        run: docker build -t my-models-image src/models 
+          
+      - name: Run Docker Container
+        run: docker run --name models-container -d my-models-image
+      
+
+      # Step 9: Run tests with coverage and generate HTML report
+      - name: Run tests with coverage
+        working-directory: src/models
+        run: |
+          pipenv run pytest ../../tests/test_models* --cov=./ --cov-report=term --cov-report=html
+
+      # Step 10: Upload coverage report as artifact
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: src/models/htmlcov/**
+
+      # Step 11: Stop and Remove Docker Container
+      - name: Cleanup Docker
+        run: |
+          docker stop models-container
+          docker rm models-container
+      
