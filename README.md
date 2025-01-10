@@ -1,13 +1,4 @@
 # Pourfect AI
-
-**Team Members**
-
-Niki Ekstrom, Soline Boussard, Michelle Hewson, Sydney Levy, Aida York
-
-**Group Name**
-
-Git Girls 
-
 **Pourfect AI - Project Overview**
 
 Pourfect AI is a fully developed application that leverages user input and preferences to deliver personalized cocktail recommendations. With Pourfect AI, users can input the ingredients they have on hand and instantly discover cocktail recipes that match, helping to reduce waste and optimize ingredient use. The app also innovates by crafting unique cocktail recipes tailored specifically to the available ingredients. Users can explore cocktails based on their taste preferences, occasions, or type of glassware. Detailed recipe instructions are provided, with options for both alcoholic and non-alcoholic variations. The chatbot remembers user preferences, ensuring a highly personalized and seamless cocktail-making experience. Powered by a robust Retrieval-Augmented Generation (RAG) system and fine-tuned LLM models, Pourfect AI is the ultimate cocktail expert at your fingertips.
